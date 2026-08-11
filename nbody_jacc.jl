@@ -249,11 +249,11 @@ end
 # JACC's default threadgroup size on Metal is the kernel maximum (1024), which
 # can limit occupancy for register-heavy kernels. Try a few sizes once and keep
 # the fastest. Returns `nothing` (= JACC's automatic config, unchanged
-# behaviour) on CPU backends, so portability is preserved.
+# behaviour) on CPU and Vector Engine backends, so portability is preserved.
 const TG_CANDIDATES = (64, 128, 256, 512, 1024)
 
 function autotune_tg(::Type{T}; N = 1 << 17, iters = 16) where {T}
-    JACC.array_type() === Base.Array && return nothing  # CPU: keep defaults
+    JACC_BACKEND in (:threads, :vectorengine) && return nothing  # CPU, VE: keep defaults
     eps2 = (T(1) / T(64))^2
     hx, hy, hz, hm = uniform_sphere(T, N)
     x = JACC.array(hx); y = JACC.array(hy); z = JACC.array(hz); m = JACC.array(hm)
