@@ -23,7 +23,7 @@ const FP = get(ENV, "JACC_NBODY_FP", "32") == "64" ? Float64 : Float32
 
 # 22 floating-point operations per pairwise interaction (leapfrog, no potential),
 # counting reciprocal-sqrt as 4 ops -- same convention as the reference repo.
-const FLOPS_PER_INTERACTION = 22.0
+const FLOPS_PER_INTERACTION_DEFAULT = 22.0
 
 # --- Reciprocal square root: backend-specific implementation ----------------
 # JACC compiles the force kernel once for the backend selected via
@@ -89,6 +89,12 @@ elseif JACC_BACKEND === :vectorengine
 
 else  # :threads (and any other CPU backend)
     @inline rsqrt(x::Union{Float32, Float64}) = @fastmath one(x) / sqrt(x)
+end
+
+@static if JACC_BACKEND === :vectorengine
+    const FLOPS_PER_INTERACTION = 18.0 + (FP === Float32 ? 7 : 13)
+else
+    const FLOPS_PER_INTERACTION = FLOPS_PER_INTERACTION_DEFAULT
 end
 
 # --- Force kernel: direct all-pairs gravitational acceleration --------------
