@@ -120,7 +120,7 @@ end
     ayi = zero(T)
     azi = zero(T)
     @inbounds @fastmath for j in 1:N
-        $(Expr(:loopinfo, (Symbol("llvm.loop.unroll.count"), 128)))
+        $(JACC_BACKEND === :vectorengine ? nothing : Expr(:loopinfo, (Symbol("llvm.loop.unroll.count"), 128)))
         dx = x[j] - xi
         dy = y[j] - yi
         dz = z[j] - zi
