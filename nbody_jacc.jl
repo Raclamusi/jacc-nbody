@@ -75,17 +75,18 @@ elseif JACC_BACKEND === :amdgpu
 elseif JACC_BACKEND === :vectorengine
     # Hardware reciprocal-sqrt seed refined with Newton-Raphson iterations:
     # one pass reaches full Float32 accuracy, two passes full Float64.
-    @inline function rsqrt(x::Float32)
-        y = @fastmath 1.0f0 / sqrt(x)         # 1 op
-        y += 0.5f0 * y * (1.0f0 - x * y * y)  # 6 ops
-        return y
-    end
-    @inline function rsqrt(x::Float64)
-        y = @fastmath 1.0 / sqrt(x)       # 1 op
-        y += 0.5 * y * (1.0 - x * y * y)  # 6 ops
-        y += 0.5 * y * (1.0 - x * y * y)  # 6 ops
-        return y
-    end
+    # @inline function rsqrt(x::Float32)
+    #     y = @fastmath 1.0f0 / sqrt(x)         # 1 op
+    #     y += 0.5f0 * y * (1.0f0 - x * y * y)  # 6 ops
+    #     return y
+    # end
+    # @inline function rsqrt(x::Float64)
+    #     y = @fastmath 1.0 / sqrt(x)       # 1 op
+    #     y += 0.5 * y * (1.0 - x * y * y)  # 6 ops
+    #     y += 0.5 * y * (1.0 - x * y * y)  # 6 ops
+    #     return y
+    # end
+    @inline rsqrt(x::Union{Float32, Float64}) = VectorEngine.rsqrt(x)
 
 else  # :threads (and any other CPU backend)
     @inline rsqrt(x::Union{Float32, Float64}) = @fastmath one(x) / sqrt(x)
